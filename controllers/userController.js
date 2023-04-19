@@ -5,7 +5,6 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { use } from '../routes/user';
 const saltRounds = 12;
-const SECRET = "Hieudeptrai"; 
 
 const userController = {
 
@@ -42,9 +41,9 @@ const userController = {
     // Login into an username 
     Login : async (req, res) => {
         try{
-        const { username,password } = req.body; 
+        const { username } = req.body; 
   
-        if (!username || !password) {
+        if (!username || !req.body.password) {
           throw Error("No username or password")
         }
   
@@ -53,7 +52,7 @@ const userController = {
           throw Error(`No username match`)
         }
         
-          let isMatch = await bcrypt.compare(password, users.password)
+          let isMatch = await bcrypt.compare(req.body.password, users.password)
         if (!isMatch){
           throw Error('Wrong password')
         }
@@ -61,9 +60,11 @@ const userController = {
           data: {
               userId: users._id
           }
-      }, SECRET, { expiresIn: 60*60*24});
+      }, process.env.JWT_ACCESS_KEY, { expiresIn: 60*60*24});       // Thời gian mã token hết hạn 
 
-        res.send({Message: 'Login successfully', usersname: users, token: token})
+        const {password, ...others} = users._doc;           // others: các thông tin còn lại của user ngoại trừ password 
+
+        res.send({Message: 'Login successfully', ...others, token: token});
       } catch (error) {
         res.send(error.message) 
       }
