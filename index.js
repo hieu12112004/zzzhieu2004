@@ -1,5 +1,10 @@
-const express = require('express')
-const app = express()
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const cookieParser = require('cookie-parser'); 
+
+
+const app = express(); 
 const port = 3000
 import mongoose, { Schema, mongo } from 'mongoose' 
 import bcrypt from 'bcrypt'
@@ -8,11 +13,12 @@ import jwt from 'jsonwebtoken'
 const userRoute = require("./routes/user"); 
 const noteRoute = require("./routes/note"); 
 
+dotenv.config(); 
 const saltRounds = 12; 
 app.use(express.json()); 
 
 
-mongoose.connect("mongodb+srv://GDSC:gdscurlshortener123@cluster0.4mncv.mongodb.net/Hieu?authSource=admin&replicaSet=atlas-h2i7y8-shard-0&w=majority&readPreference=primary&retryWrites=true&ssl=true")
+mongoose.connect(process.env.MONGODB_URL)
         .then(() => console.log("Xinh đẹp tuyệt vời, chúc ngày mới an lành!"))
 
 app.use("/User", userRoute); 
