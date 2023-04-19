@@ -3,6 +3,7 @@ const { UserModel,NoteModel } = require("../model/model");
 
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import { use } from '../routes/user';
 const saltRounds = 12;
 const SECRET = "Hieudeptrai"; 
 
@@ -15,15 +16,16 @@ const userController = {
     //Create a new account: 
     Signup :  async (req, res) => {
         try {
-          var { username,password } = req.body; 
+          var { username,password,email } = req.body; 
         const user = new UserModel();
         user.username = username; 
+        user.email = email; 
         user.password = await bcrypt.hash(password, saltRounds); 
       
         await user.save();
       
-        if (!username || !password) {
-          throw Error(`Chưa nhập Tài Khoản hoặc Mật Khẩu !`)
+        if (!username || !password || !email) {
+          throw Error(`Chưa nhập đủ thông tin !`)
         }
       
         const isCheck = await UserModel.findOne(); 
