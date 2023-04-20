@@ -1,18 +1,27 @@
 const { model } = require("mongoose");
 const { UserModel,NoteModel } = require("../model/model"); 
-
 const noteController = {
     // Make new note: 
-    Create : async (req, res) => {
-    
+    create : async (req, res) => {
+
         try{
-        const Note = new NoteModel(req.body); 
-        const saveNote = await Note.save();
-        if (req.body.userid) {
-          const userCheck = UserModel.findById(req.body.userid); 
-          await userCheck.updateOne({$push: { title: saveNote._id}}); 
-        }
-        res.send({Message: `New note created` });
+        const userId = req.userId;
+        console.log(userId); 
+        const userCheck = UserModel.findById(userId); 
+        if (!userCheck) {
+          throw error("no user match");
+        } 
+
+        const note = new NoteModel();
+        note.title = req.body.title; 
+        note.note = req.body.note; 
+        note.userid = userId;  
+        // console.log(note); 
+
+        await note.save();
+        
+          await userCheck.updateOne({$push: { note: note._id}}); 
+        res.send({message: `New note created`, note: note });
       } catch (err){
         res.status(500).json(err); 
       }
@@ -35,22 +44,23 @@ const noteController = {
       }
     },
       // Get all note of an username
-      GetNote: async(req,res) => {
+      getNote: async(req,res) => {
         try{ 
-        const findNote = await UserModel.findById(req.params.userid).populate("title");  // populate: hiện toàn bộ thông tin về title của findNote
+        const userId = req.userId; 
+        const findNote = await UserModel.findById(userId).populate("note");  // populate: hiện toàn bộ thông tin về title của findNote
         
         if (!findNote) {
             throw Error('No username match')
         }
 
-        res.send({Username: findNote.username, Title: findNote.title})
+        res.status(200).json({Username: findNote.username, Note: findNote.note})
       } catch(err){
         res.status(500).json(err); 
         }
       }, 
 
       // Update a Note: 
-      UpdateNote : async(req,res) => {
+      updateNote : async(req,res) => {
         try {
           const findNote = await NoteModel.findById(req.params.noteid); 
           await findNote.updateOne({$set: req.body}); 
@@ -61,7 +71,7 @@ const noteController = {
       },
 
       // Delete a Note: 
-      DeleteNote : async(req,res) => {
+      deleteNote : async(req,res) => {
         try {
           await UserModel.updateMany(
             { title: req.params.noteid }, 

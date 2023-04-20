@@ -10,8 +10,10 @@ import mongoose, { Schema, mongo } from 'mongoose'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
-const userRoute = require("./routes/user"); 
-const noteRoute = require("./routes/note"); 
+// const userRoute = require("./routes/user"); 
+// const noteRoute = require("./routes/note"); 
+
+import routes from './routes';
 
 dotenv.config(); 
 const saltRounds = 12; 
@@ -21,44 +23,19 @@ app.use(express.json());
 mongoose.connect(process.env.MONGODB_URL)
         .then(() => console.log("Xinh đẹp tuyệt vời, chúc ngày mới an lành!"))
 
-app.use("/User", userRoute); 
-app.use("/Note", noteRoute); 
-
-app.get('/getAllNote', async (req, res) => {
-  const checkUser = await UserModel.find(); 
-
-  console.log(checkUser)
-  if (!checkUser) {
-    res.send({Message: `No note has been made`})
-  }
-
-  res.send({Message: `List`,note: checkUser} )
+// app.use("/user", routes.user); 
+// app.use("/note", routes.note); 
+// for (const [key, value] of Object.entries(routes)) {
+//   console.log(`${key}: ${value}`);
+//   app.use(`/${key}`, value);
+// }
+routes.map(e=>{
+  app.use(e.path, e.route);
 })
+// -> app.use 
 
 
-//Tạo note
-app.post('/createNote', async (req, res) => {
-    const { title,note } = req.body;
-    const Note = new NoteModel(); 
 
-    Note.title = title; 
-    Note.note = note; 
-    //Note.LastUpdate = tgian lúc tạo ...  
-    await Note.save();
-
-    res.send({Message: `New note created` });
-})
-
-//hiện toàn bộ note
-app.post('/getAllNotes', async (req, res) => {
-  const checkNote = await NoteModel.find(); 
-
-  if (!checkNote) {
-    res.send({Message: `No note has been made`})
-  }
-
-  res.send({Message: `List`, note: checkNote} )
-})
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)

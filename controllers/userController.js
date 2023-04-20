@@ -8,38 +8,35 @@ const saltRounds = 12;
 
 const userController = {
 
-    Hi : (req,res) => {
-        res.send(`Hello Bitch`)
-    }, 
-
     //Create a new account: 
-    Signup :  async (req, res) => {
+    signup :  async (req, res) => {
         try {
           var { username,password,email } = req.body; 
-        const user = new UserModel();
-        user.username = username; 
-        user.email = email; 
-        user.password = await bcrypt.hash(password, saltRounds); 
-      
-        await user.save();
-      
+            
         if (!username || !password || !email) {
           throw Error(`Chưa nhập đủ thông tin !`)
         }
       
-        const isCheck = await UserModel.findOne(); 
-        if (!isCheck){
+        const isCheck = await UserModel.findOne({username : username}); 
+        if (isCheck){
           throw Error(`User Account has been existed, plz try new one`)
         }
+
+        const user = new UserModel();
+        user.username = username; 
+        user.email = email; 
+        user.password = await bcrypt.hash(password, saltRounds); 
+
+        await user.save();
       
         res.send({Message: 'Sign up successfully', user: user}); 
-        } catch (error) {
-          res.send(error.message) 
+        } catch (err) {
+            res.status(200).json(err.message)
         }
       },
 
     // Login into an username 
-    Login : async (req, res) => {
+    login : async (req, res) => {
         try{
         const { username } = req.body; 
   
@@ -47,7 +44,7 @@ const userController = {
           throw Error("No username or password")
         }
   
-        const users = await UserModel.findOne({username: username}).populate("title"); 
+        const users = await UserModel.findOne({username: username}).populate("note"); 
         if (!users){
           throw Error(`No username match`)
         }
@@ -71,7 +68,7 @@ const userController = {
   },
 
   // Change password: 
-    ChangePassword : async (req, res) => {
+    changepassword : async (req, res) => {
       try {
         const { newPassword } = req.body
         const authHeader = req.headers.authorization;
@@ -91,7 +88,7 @@ const userController = {
     },
 
   // Delete an user: 
-    DeleteUser: async(req, res) => {
+  deleteuser: async(req, res) => {
         try {
           const check = await UserModel.findById(req.params.userid); 
           if (!check) throw Error("User not exist"); 
