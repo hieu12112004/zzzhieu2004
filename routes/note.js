@@ -8,9 +8,6 @@ router.all("*", authenticateController.verifytoken);
 // GET /note/* Regex
 router.post("/", noteController.create); 
 
-// Get all note
-router.get("/",noteController.GetAllNote); 
-
 // Get all notes from a user 
 router.get("/getnote",noteController.getNote); 
 

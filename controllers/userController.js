@@ -1,5 +1,5 @@
-const { model } = require("mongoose");
-const { UserModel,NoteModel } = require("../model/model"); 
+import model from "mongoose"
+import { UserModel,NoteModel } from "../model/model"
 
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';

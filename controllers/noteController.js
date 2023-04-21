@@ -1,5 +1,6 @@
-const { model } = require("mongoose");
-const { UserModel,NoteModel } = require("../model/model"); 
+import model from "mongoose"; 
+import { UserModel,NoteModel } from "../model/model"; 
+
 const noteController = {
     // Make new note: 
     create : async (req, res) => {
@@ -20,29 +21,14 @@ const noteController = {
 
         await note.save();
         
-          await userCheck.updateOne({$push: { note: note._id}}); 
-        res.send({message: `New note created`, note: note });
+        await userCheck.updateOne({$push: { note: note._id}}); 
+        res.status(200).json('New note created'); 
       } catch (err){
         res.status(500).json(err); 
       }
     }, 
 
 
-    // Get all notes 
-    GetAllNote : async (req, res) => {
-      try{
-        const checkNote = await NoteModel.find(); 
-      
-        if (!checkNote) {
-          res.send({Message: `No note has been made`})
-        }
-      
-        res.send({Message: `List: `, note: checkNote} );
-      }
-    catch(err){
-      res.status(500).json(err); 
-      }
-    },
       // Get all note of an username
       getNote: async(req,res) => {
         try{ 
@@ -63,8 +49,12 @@ const noteController = {
       updateNote : async(req,res) => {
         try {
           const findNote = await NoteModel.findById(req.params.noteid); 
+          if (findNote === null) {
+            throw error("Can not find note corresponding")
+          }
+          
           await findNote.updateOne({$set: req.body}); 
-          res.send({Message: 'Update Successfully', Note: req.body}); 
+          res.status(200).json({Message: 'Update Successfully', Note: req.body}); 
         } catch (err) {
           res.status(500).json(err);
         }
@@ -74,8 +64,8 @@ const noteController = {
       deleteNote : async(req,res) => {
         try {
           await UserModel.updateMany(
-            { title: req.params.noteid }, 
-            { $pull: { title: req.params.noteid } }
+            { note: req.params.noteid }, 
+            { $pull: { note: req.params.noteid } }
           ); 
           await NoteModel.findByIdAndDelete(req.params.noteid); 
           res.send("Delete successfully"); 
